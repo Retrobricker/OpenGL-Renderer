@@ -1,5 +1,7 @@
 # OpenGL Renderer
 
+![Vertex Array Objects](https://github.com/Retrobricker/OpenGL-Renderer/blob/main/vertex_array_objects.jpg)
+
 A custom rendering engine written in C++ using modern OpenGL.
 
 This project serves as an exploration of real-time graphics programming by implementing the core components of a rendering engine from scratch. Development follows the LearnOpenGL curriculum while emphasizing clean architecture and a deep understanding of the graphics pipeline.
