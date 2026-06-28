@@ -43,6 +43,26 @@ int main() {
     //Tell GLFW we want to call the framebuffer_size_callback funciton every time it is resized
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    //Vertices 
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f, 0.5f, 0.0f
+    };
+
+    //glGenBuffers(how many, the reference id) to store onto the GPU
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+
+    //Binding means "Every command I issue next should affect this buffer."
+    //Binds VBO
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    //From that point on any buffer calls we make (on the GL_ARRAY_BUFFER target) 
+    //will be used to configure the currently bound buffer, which is VBO. 
+    //Allocates memory on the GPU (sizeof vertices!)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
     //Ready your engines! While loop so it stays open
     /*
     The glfwWindowShouldClose function checks at the start of each loop iteration if GLFW has been instructed to close. 
