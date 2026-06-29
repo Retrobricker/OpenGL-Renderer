@@ -3,103 +3,166 @@
 
 #include <iostream>
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
 
-//Defining Vertex Shader. Uses version 3.3, 
-const char *vertexShaderSource = "#version 330 core\n"
+// Defining Vertex Shader. Uses version 3.3,
+const char* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "void main()\n"
 "{\n"
 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 "}\0";
+const char* fragmentShaderSource = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main()\n"
+"{\n"
+"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"}\n\0";
 
 int main() {
-    //Initialize glfw
-    //Hints provide glfw what version the user has, so for OpenGL 3.3 we set the major and minor
-    //versions to 3 and 3. We tell GLFW to explicitly use the core profile.
+    // Initialize glfw
+    // Hints provide glfw what version the user has, so for OpenGL 3.3 we set the major and minor
+    // versions to 3 and 3. We tell GLFW to explicitly use the core profile.
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    //Window creation
-    GLFWwindow *window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    // Window creation
+    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
-    //Allows CPU to manage graphics for this specific window
+    // Allows CPU to manage graphics for this specific window
     glfwMakeContextCurrent(window);
 
-    //GLAD manages the function pointers for OpenGL. We must initialize GLAD before making any
-    //OpenGL calls
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    // GLAD manages the function pointers for OpenGL. We must initialize GLAD before making any
+    // OpenGL calls
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-    //Create viewport
-    //OpenGL uses data specific here to eventually transform 2D coordinates to one on your screen
-    //For example, a processed point of location (-0.5,0.5) 
-    //would (as its final transformation) be mapped to (200,450) in screen coordinates.
+    // Create viewport
+    // OpenGL uses data specific here to eventually transform 2D coordinates to one on your screen
+    // For example, a processed point of location (-0.5,0.5)
+    // would (as its final transformation) be mapped to (200,450) in screen coordinates.
     glViewport(0, 0, 800, 600);
 
-    //store Reference ID to create vertex shader
+    /* ======================================================================== */
+    /*                              VERTEX SHADER                               */
+    /*               OpenGL requires at least vertex and fragment shaders       */
+    /* ======================================================================== */
+
+    // store Reference ID to create vertex shader
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
-    //Attach shader source code and compile the shader
+    // Attach shader source code and compile the shader
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
 
-    //Testing to see if shaders compiled
+    // Testing to see if shaders compiled
     int success;
     char infoLog[512];
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 
     if (!success) {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    } else {
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+            << infoLog << std::endl;
+    }
+    else {
         std::cout << "Shaders compiled!" << std::endl;
     }
 
+    /* ======================================================================== */
+    /*                              FRAGMENT SHADER                             */
+    /*                          The second and final shader (color)             */
+    /* ======================================================================== */
 
-    //Tell GLFW we want to call the framebuffer_size_callback funciton every time it is resized
+    // Compiles a shader the same way as the vertex, but instead we tell openGL its a fragment shader
+    unsigned int fragmentShader;
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    /* ======================================================================== */
+    /*                              SHADER PROGRAM                              */
+    /*                          Linking the shaders together                    */
+    /* ======================================================================== */
+
+    // Creates program object and returns reference ID (unsigned int) to newly created object
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+
+    // Now link
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    //Test Linkage
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::LINKAGE::COMPILATION_FAILED\n"
+            << infoLog << std::endl;
+    }
+
+    //Use the shader program we made
+    glUseProgram(shaderProgram);
+
+    //Delete unneeded shader pointers once program is made
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    // Tell GLFW we want to call the framebuffer_size_callback funciton every time it is resized
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    //Vertices 
+
+    /* ======================================================================== */
+    /*                              VERTEX INPUT                                */
+    /*                    Create vertex and store in VBO buffer                 */
+    /* ======================================================================== */
+
+
+    // Vertices
     float vertices[] = {
         -0.5f, -0.5f, 0.0f,
         0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
-    };
+        0.0f, 0.5f, 0.0f };
 
-    //glGenBuffers(how many, the reference id) to store onto the GPU
+    // glGenBuffers(how many, the reference id) to store onto the GPU
     unsigned int VBO;
     glGenBuffers(1, &VBO);
 
-    //Binding means "Every command I issue next should affect this buffer."
-    //Binds VBO
+    // Binding means "Every command I issue next should affect this buffer."
+    // Binds VBO
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    //From that point on any buffer calls we make (on the GL_ARRAY_BUFFER target) 
-    //will be used to configure the currently bound buffer, which is VBO. 
-    //Allocates memory on the GPU (sizeof vertices!)
+    // From that point on any buffer calls we make (on the GL_ARRAY_BUFFER target)
+    // will be used to configure the currently bound buffer, which is VBO.
+    // Allocates memory on the GPU (sizeof vertices!)
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-
-
-    //Ready your engines! While loop so it stays open
+    // Ready your engines! While loop so it stays open
     /*
-    The glfwWindowShouldClose function checks at the start of each loop iteration if GLFW has been instructed to close. 
-    
-    The glfwPollEvents function checks if any events are triggered 
+    The glfwWindowShouldClose function checks at the start of each loop iteration if GLFW has been instructed to close.
+
+    The glfwPollEvents function checks if any events are triggered
     (like keyboard input or mouse movement events)
 
-    The glfwSwapBuffers will swap the color buffer 
-    (a large 2D buffer that contains color values for each pixel in GLFW's window) 
+    The glfwSwapBuffers will swap the color buffer
+    (a large 2D buffer that contains color values for each pixel in GLFW's window)
     that is used to render to during this render iteration and show it as output to the screen.
 
     Basically, instead of drawing the screen (left to right bottom to top) in front of the user,
@@ -108,37 +171,33 @@ int main() {
     */
     while (!glfwWindowShouldClose(window)) {
 
-        //input
+        // input
         processInput(window);
-        
-        //renderer commands here
+
+        // renderer commands here
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        //check and call events and swap buffers
-        //polls IO events
+        // check and call events and swap buffers
+        // polls IO events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    //Terminates GLFW library
+    // Terminates GLFW library
     glfwTerminate();
 
     return 0;
 }
 
-void processInput(GLFWwindow *window) {
-    //Close window when pressing ESC
+void processInput(GLFWwindow* window) {
+    // Close window when pressing ESC
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
-
 }
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    //Width and Height of new resizing passed
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    // Width and Height of new resizing passed
     glViewport(0, 0, width, height);
 }
-
-
-
