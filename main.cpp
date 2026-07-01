@@ -124,6 +124,52 @@ int main() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+
+    /* ======================================================================== */
+    /*                          LINKING VERTEX ATTRIBUTES                       */
+    /*                          Interpreting vertex data                        */
+    /* ======================================================================== */
+
+    //glVertexAttribPointer specifies how OpenGL should interpret vertex buffer data when a drawing call is made
+
+    //0 since location = 0 in vertexShaderSource
+    //size 3 since vec3
+    //GL_FLOAT since these are float vertices
+    //GL_FALSE do not normalize, it will snap to -1, 0, 1
+    //stride is the space between consecutive vertex attributes, so it is 3 floats between attributes
+    //void pointer asking for how big the offset is, which is 0 for this case
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    /* ======================================================================== */
+    /*                              DRAWING AN OBJECT                           */
+    /*                         Bringing everything together                     */
+    /* ======================================================================== */
+
+    // We have everything setup:
+    /*
+        We initialized our vertex data in a buffer using a vertex buffer object (VBO)
+
+        Set up a vertex and fragment shader and told OpenGL how to link the vertex data
+        to the vertex shader's vertex attributes
+    
+        Now drawing an object will look like this:
+    */
+
+    /*
+    // 0. copy our vertices array in a buffer for OpenGL to use
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // 1. then set the vertex attributes pointers
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);  
+    // 2. use our shader program when we want to render an object
+        glUseProgram(shaderProgram);
+    // 3. now draw the object 
+        someOpenGLFunctionThatDrawsOurTriangle();   
+    */
+
+    
     // Tell GLFW we want to call the framebuffer_size_callback funciton every time it is resized
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
